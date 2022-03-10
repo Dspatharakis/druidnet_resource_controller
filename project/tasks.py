@@ -8,6 +8,7 @@ from psycopg2 import InternalError
 from celery.utils.log import get_task_logger
 from PIL import Image
 import os
+import math
 
 logger = get_task_logger(__name__)
 
@@ -25,6 +26,7 @@ def create_task_red(img_id,start_time): # kubernetes access with nodeport and ex
     data = Rate.query.first()
     art = time.time() - start_time
     data.accumulative_response_time = data.accumulative_response_time + art
+    data.active_requests_app1 = data.active_requests_app1 - 1
     data.counter_requests = data.counter_requests + 1
     db.session.commit()
     return True
@@ -43,6 +45,7 @@ def create_task_green(img_id, start_time):
     data = Rate.query.first()
     art = time.time() - start_time
     data.accumulative_response_time = data.accumulative_response_time + art
+    data.active_requests_app2 = data.active_requests_app2 - 1
     data.counter_requests = data.counter_requests + 1
     db.session.commit()
     return True
@@ -54,10 +57,14 @@ def create_task_queue(img_id,start_time):
     req_rate_app1 = data.req_rate_app1 
     req_rate_app2 = data.req_rate_app2 
     propability = random.randint(0,(int(req_rate_app1)+int(req_rate_app2)))
+    data = Rate.query.first()
     if propability < req_rate_app1:  
         task = create_task_red.delay(img_id,start_time)
+        data.active_requests_app1 = data.active_requests_app1 + 1
     else: 
         task = create_task_green.delay(img_id,start_time)
+        data.active_requests_app2 = data.active_requests_app2 + 1
+    db.session.commit()
     return True
 
 @celery.task(queue='celery_periodic')
@@ -70,9 +77,17 @@ def update_per_interval():
         time_passed = 1
         if data.time_passed_since_last_event >= int(os.environ.get("event_cooldown", "2")): 
             if (length == 0):
-                print ("queue is empty")   
+                print ("queue is empty")
+                data.process_rate_app1 = float(os.environ.get("beta1", "0.5")) *  data.req_rate_app1 + math.sqrt(2* float(os.environ.get("alpha1", "2"))*data.active_requests_app1)
+                data.process_rate_app2 = float(os.environ.get("beta2", "0.5")) *  data.req_rate_app2 + math.sqrt(2* float(os.environ.get("alpha2", "2"))*data.active_requests_app2)
+                # Need a proper mapping between \gamma and replicas
+                data.replicas_app1 = data.process_rate_app1 // data.process_rate_app1
+                data.replicas_app2 = data.process_rate_app2 // data.process_rate_app2
+                data.queue_trigger = 2 
                 data.time_passed_since_last_event = 0 
                 time_passed = 0
+            else:
+                data.queue_trigger = 1
         req1 = float(os.environ.get("beta1", "0.5")) * data.req_rate_app1 + float(os.environ.get("alpha1", "2"))*(data.time_passed_since_last_event+time_passed)
         req2 = float(os.environ.get("beta2", "0.5")) * data.req_rate_app2 + float(os.environ.get("alpha2", "3"))*(data.time_passed_since_last_event+time_passed)
         if req1 < 0.5: req1=0.5
@@ -84,8 +99,6 @@ def update_per_interval():
         data.queue_size = length
         data.interval_time = data.interval_time + 1
 
-        # if (data.interval_time >= ):
-            # print ("interval time is over")
         if data.counter_requests > 0:
             art = data.accumulative_response_time / data.counter_requests
             data.average_response_time = art
@@ -96,10 +109,7 @@ def update_per_interval():
         data.interval_time = 0 
         db.session.commit()
         print ("Request Rate for App1: ", data.req_rate_app1, " Request Rate for App2: ",data.req_rate_app2)
-        # celery.control.rate_limit('create_task_red', str(data.req_rate_app1)+"/s")
-        # celery.control.rate_limit('create_task_green', str(data.req_rate_app2)+"/s")
         celery.control.rate_limit('create_task_queue', str(data.req_rate_app2 + data.req_rate_app1)+"/s", destination=['celery@queue_worker'])
-        # celery.control.rate_limit('create_task_queue', "4/s", destination=['celery@queue_worker'])
 
     except InternalError:
         pass   

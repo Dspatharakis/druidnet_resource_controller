@@ -1,0 +1,87 @@
+databases:
+  db1:
+    dsn: postgresql://hello_flask:hello_flask@db:5432/hello_flask_dev
+
+metrics:
+  queue_size:
+    type: gauge
+    description: Queue Size 
+  req_rate_app1:
+    type: gauge
+    description: Request_Rate_App1
+  req_rate_app2:
+    type: gauge
+    description: Request_Rate_App2
+  time_of_experiment:
+    type: gauge
+    description: Time of experiment
+  average_response_time:
+    type: gauge
+    description: average_response_time
+  queue_trigger:
+    type: gauge
+    description: queue_trigger
+  process_rate_app1:
+    type: gauge
+    description: Process_rate_app1
+  process_rate_app2:
+    type: gauge
+    description: Process_rate_app2
+  replicas_app1:
+    type: gauge
+    description: Replicas_app1
+  replicas_app2:
+    type: gauge
+    description: Replicas_app2
+
+queries:
+  query1:
+    interval: 1
+    databases: [db1]
+    metrics: [queue_size]
+    sql: select queue_size from rates as queue_size
+  query2:
+    interval: 1
+    databases: [db1]
+    metrics: [req_rate_app1]
+    sql: select req_rate_app1 from rates as req_rate_app1
+  query3:
+    interval: 1
+    databases: [db1]
+    metrics: [req_rate_app2]
+    sql: select req_rate_app2 from rates as req_rate_app2
+  query4:
+    interval: 1
+    databases: [db1]
+    metrics: [time_of_experiment]
+    sql: select time_of_experiment from rates as time_of_experiment
+  query5:
+    interval: 1
+    databases: [db1]
+    metrics: [average_response_time]
+    sql: SELECT average_response_time from rates AS average_response_time
+  query6:
+    interval: 1
+    databases: [db1]
+    metrics: [queue_trigger]
+    sql: SELECT queue_trigger from rates AS queue_trigger
+  query7:
+    interval: 1
+    databases: [db1]
+    metrics: [process_rate_app1]
+    sql: SELECT process_rate_app1 from rates AS process_rate_app1
+  query8:
+    interval: 1
+    databases: [db1]
+    metrics: [process_rate_app2]
+    sql: SELECT process_rate_app2 from rates AS process_rate_app2
+  query9:
+    interval: 1
+    databases: [db1]
+    metrics: [replicas_app1]
+    sql: SELECT replicas_app1 from rates AS replicas_app1
+  query10:
+    interval: 1
+    databases: [db1]
+    metrics: [replicas_app2]
+    sql: SELECT replicas_app2 from rates AS replicas_app2

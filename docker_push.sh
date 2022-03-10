@@ -25,5 +25,5 @@ docker push dspatharakis/controller_druidnet:web
 # docker push dspatharakis/controller_druidnet:red_worker
 # docker tag druidnet_red_worker dspatharakis/controller_druidnet:queue_worker
 # docker push dspatharakis/controller_druidnet:queue_worker
-# docker tag query-exporter dspatharakis/controller_druidnet:query-exporter
-# docker push dspatharakis/controller_druidnet:query-exporter 
+docker tag query-exporter dspatharakis/controller_druidnet:query-exporter
+docker push dspatharakis/controller_druidnet:query-exporter 

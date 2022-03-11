@@ -105,8 +105,12 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "2*sum(req_rate_app1) + sqrt(sum(flower_events_total{type=\"task-received\",worker=\"celery@green_worker\"})-sum(flower_events_total{type=\"task-succeeded\",worker=\"celery@green_worker\"})) ",
+          "expr": "process_rate_app1",
           "instant": false,
           "interval": "1s",
           "legendFormat": "γ for app1",
@@ -114,12 +118,40 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "3*sum(req_rate_app2) + sqrt(sum(flower_events_total{type=\"task-received\",worker=\"celery@red_worker\"})-sum(flower_events_total{type=\"task-succeeded\",worker=\"celery@red_worker\"}))",
+          "expr": "process_rate_app2",
           "hide": false,
           "interval": "1s",
           "legendFormat": "γ for app2",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "replicas_app1",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "total cores app1",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "replicas_app2",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "total cores app2",
+          "refId": "D"
         }
       ],
       "title": "γ parameter",
@@ -137,25 +169,22 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 11,
+        "h": 9,
         "w": 12,
         "x": 12,
         "y": 0
       },
       "hiddenSeries": false,
-      "id": 2,
+      "id": 10,
       "interval": "1s",
       "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": true,
-        "hideZero": true,
-        "max": true,
-        "min": true,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
         "show": true,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
       "linewidth": 1,
@@ -175,36 +204,46 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "sum (rate(flask_http_request_total{service=~\".*app.*\"} [10s]))",
+          "expr": "count(count by (pod) (container_memory_usage_bytes{container=~\"app.*\"}))",
           "format": "time_series",
-          "instant": false,
-          "interval": "1s",
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Average Rate per 10s",
+          "legendFormat": "Total pods on apps",
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "sum by (pod) (\n  sum by (pod, status) (\n    rate(flask_http_request_total{service=~\".*app.*\"} [10s])\n  )\n)",
-          "format": "time_series",
-          "interval": "1s",
-          "intervalFactor": 1,
-          "legendFormat": "{{pod}} Rate per 10s",
+          "expr": "count(count by (pod) (container_memory_usage_bytes{container=~\"app1*\"}))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "total app1",
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "sum (rate(flask_http_request_total{service=~\".*web.*\"} [10s]))",
+          "expr": "count(count by (pod) (container_memory_usage_bytes{container=~\"app2*\"}))",
           "hide": false,
-          "interval": "1s",
-          "legendFormat": "Controller Rate per 10s",
+          "interval": "",
+          "legendFormat": "total app2",
           "refId": "C"
         }
       ],
       "thresholds": [],
       "timeRegions": [],
-      "title": "Finished Requests rate",
+      "title": "Number of pods",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -218,14 +257,14 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:65",
-          "format": "reqps",
+          "$$hashKey": "object:275",
+          "format": "none",
           "logBase": 1,
-          "min": "0",
+          "min": "0.0",
           "show": true
         },
         {
-          "$$hashKey": "object:66",
+          "$$hashKey": "object:276",
           "format": "short",
           "logBase": 1,
           "show": true
@@ -288,7 +327,33 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "active_requests_app2",
+                  "active_requests_app1"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -314,6 +379,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
           "expr": "(sum(flower_events_total{type=\"task-received\",worker=\"celery@green_worker\"})-sum(flower_events_total{type=\"task-succeeded\",worker=\"celery@green_worker\"})) ",
           "hide": false,
@@ -322,123 +391,187 @@
           "refId": "F"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
           "expr": "(sum(flower_events_total{type=\"task-received\",worker=\"celery@red_worker\"})-sum(flower_events_total{type=\"task-succeeded\",worker=\"celery@red_worker\"})) ",
           "hide": false,
           "interval": "1s",
           "legendFormat": "not finished app1",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "active_requests_app1",
+          "hide": false,
+          "interval": "1s",
+          "legendFormat": "active_requests_app1",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "active_requests_app2",
+          "hide": false,
+          "interval": "1s",
+          "legendFormat": "active_requests_app2",
+          "refId": "C"
         }
       ],
       "title": "Tasks Not Finished",
       "type": "timeseries"
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": {
         "type": "prometheus",
         "uid": "P1809F7CD0C75ACF3"
       },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 11,
         "w": 12,
         "x": 12,
-        "y": 11
+        "y": 9
       },
-      "id": 21,
+      "hiddenSeries": false,
+      "id": 4,
       "interval": "1s",
-      "options": {
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "mean",
-            "last"
-          ],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
       },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@green_worker\"}[10s])",
+          "expr": "avg(\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app.*\"} [10s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app.*\"} [10s])\n    )\n)",
+          "format": "time_series",
           "interval": "1s",
-          "legendFormat": "app2 worker",
-          "queryType": "randomWalk",
+          "intervalFactor": 1,
+          "legendFormat": "Average",
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@red_worker\"}[10s])",
-          "hide": false,
+          "expr": "avg by (pod) (\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app1\"} [10s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app1\"} [10s])\n    )\n)",
+          "format": "time_series",
           "interval": "1s",
-          "legendFormat": "app1 worker",
+          "intervalFactor": 1,
+          "legendFormat": "{{pod}} average",
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
           "exemplar": true,
-          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@queue_worker\"}[10s])",
+          "expr": "avg by (pod) (\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app2\"} [10s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app2\"} [10s])\n    )\n)",
+          "hide": false,
+          "interval": "1s",
+          "legendFormat": "{{pod}} average",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "average_response_time",
+          "hide": false,
+          "interval": "1s",
+          "legendFormat": "average_response_time",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "avg_over_time(average_response_time [30s])",
           "hide": false,
           "interval": "",
-          "legendFormat": "queue worker",
-          "refId": "C"
+          "legendFormat": "average response 30s",
+          "refId": "E"
         }
       ],
-      "title": "Started Requests Rate ",
-      "type": "timeseries"
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Processing time",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:169",
+          "format": "s",
+          "logBase": 1,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:170",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
     },
     {
       "aliasColors": {},
@@ -559,18 +692,20 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
+        "h": 11,
         "w": 12,
         "x": 12,
-        "y": 19
+        "y": 20
       },
       "hiddenSeries": false,
-      "id": 4,
+      "id": 2,
       "interval": "1s",
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": false,
+        "current": true,
+        "hideEmpty": true,
+        "hideZero": true,
         "max": true,
         "min": true,
         "show": true,
@@ -596,34 +731,35 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "avg(\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app.*\"} [30s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app.*\"} [30s])\n    )\n)",
+          "expr": "sum (rate(flask_http_request_total{service=~\".*app.*\"} [10s]))",
           "format": "time_series",
-          "interval": "30s",
+          "instant": false,
+          "interval": "1s",
           "intervalFactor": 1,
-          "legendFormat": "Average",
+          "legendFormat": "Average Rate per 10s",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "avg by (pod) (\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app1\"} [30s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app1\"} [30s])\n    )\n)",
+          "expr": "sum by (pod) (\n  sum by (pod, status) (\n    rate(flask_http_request_total{service=~\".*app.*\"} [10s])\n  )\n)",
           "format": "time_series",
-          "interval": "30s",
+          "interval": "1s",
           "intervalFactor": 1,
-          "legendFormat": "{{pod}} average",
+          "legendFormat": "{{pod}} Rate per 10s",
           "refId": "B"
         },
         {
           "exemplar": true,
-          "expr": "avg by (pod) (\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_sum{service=~\"app2\"} [30s])\n    ) /\n    sum by (pod) (\n      rate(flask_http_request_duration_seconds_count{service=~\"app2\"} [30s])\n    )\n)",
+          "expr": "sum (rate(flask_http_request_total{service=~\".*web.*\"} [10s]))",
           "hide": false,
-          "interval": "30s",
-          "legendFormat": "{{pod}} average",
+          "interval": "1s",
+          "legendFormat": "Controller Rate per 10s",
           "refId": "C"
         }
       ],
       "thresholds": [],
       "timeRegions": [],
-      "title": "Processing time",
+      "title": "Finished Requests rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -637,14 +773,14 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:169",
-          "format": "s",
+          "$$hashKey": "object:65",
+          "format": "reqps",
           "logBase": 1,
           "min": "0",
           "show": true
         },
         {
-          "$$hashKey": "object:170",
+          "$$hashKey": "object:66",
           "format": "short",
           "logBase": 1,
           "show": true
@@ -760,10 +896,10 @@
           },
           "custom": {
             "axisLabel": "",
-            "axisPlacement": "left",
+            "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -776,8 +912,8 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "never",
-            "spanNulls": true,
+            "showPoints": "auto",
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -787,7 +923,6 @@
             }
           },
           "mappings": [],
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -800,59 +935,18 @@
                 "value": 80
               }
             ]
-          },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "unit"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          },
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "app2-6c77987849-rsbqc cpu throttling"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
           }
-        ]
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 10,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 28
+        "y": 31
       },
-      "id": 6,
-      "links": [],
+      "id": 21,
+      "interval": "1s",
       "options": {
         "legend": {
           "calcs": [
@@ -868,47 +962,33 @@
           "mode": "single"
         }
       },
-      "pluginVersion": "8.1.1",
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(container_cpu_usage_seconds_total{container=~\"app.*\"}[1m])) by (pod_name, container_name) /\nsum(container_spec_cpu_quota{container=~\"app.*\"}/container_spec_cpu_period{container=~\"app.*\"}) by (pod_name, container_name)*100",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "30s",
-          "intervalFactor": 1,
-          "legendFormat": "{{pod}} Total CPU % of limit",
+          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@green_worker\"}[10s])",
+          "interval": "1s",
+          "legendFormat": "app2 worker",
+          "queryType": "randomWalk",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "rate(container_cpu_cfs_throttled_seconds_total{container=~\"app.*\"}[1m])",
-          "format": "time_series",
+          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@red_worker\"}[10s])",
           "hide": false,
-          "interval": "30s",
-          "intervalFactor": 1,
-          "legendFormat": "{{pod}} cpu throttling",
+          "interval": "1s",
+          "legendFormat": "app1 worker",
           "refId": "B"
         },
         {
           "exemplar": true,
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"app1.*\"}[1m])) by (pod)",
+          "expr": "rate(flower_events_total{type=\"task-received\",worker=\"celery@queue_worker\"}[10s])",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{pod}} cpu % ",
+          "legendFormat": "queue worker",
           "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"app2.*\"}[1m])) by (pod)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{pod}} cpu %",
-          "refId": "D"
         }
       ],
-      "title": "CPU Utilization % ",
+      "title": "Started Requests Rate ",
       "type": "timeseries"
     },
     {
@@ -1017,92 +1097,143 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": {
         "type": "prometheus",
         "uid": "P1809F7CD0C75ACF3"
       },
-      "fill": 1,
-      "fillGradient": 0,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
-        "h": 9,
+        "h": 10,
         "w": 12,
         "x": 12,
-        "y": 38
+        "y": 39
       },
-      "hiddenSeries": false,
-      "id": 10,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
+      "id": 6,
       "links": [],
-      "nullPointMode": "null",
       "options": {
-        "alertThreshold": true
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
       },
-      "percentage": false,
-      "pluginVersion": "8.3.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "pluginVersion": "8.1.1",
       "targets": [
         {
           "exemplar": true,
-          "expr": "count(count by (pod) (container_memory_usage_bytes{container=~\"app.*\"}))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{container=~\"app.*\"}[1m])) by (pod_name, container_name) /\nsum(container_spec_cpu_quota{container=~\"app.*\"}/container_spec_cpu_period{container=~\"app.*\"}) by (pod_name, container_name)*100",
           "format": "time_series",
-          "interval": "",
+          "hide": false,
+          "instant": false,
+          "interval": "30s",
           "intervalFactor": 1,
-          "legendFormat": "Total",
+          "legendFormat": "{{pod}} Total CPU % of limit",
           "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Number of pods",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:275",
-          "format": "none",
-          "logBase": 1,
-          "min": "0.0",
-          "show": true
         },
         {
-          "$$hashKey": "object:276",
-          "format": "short",
-          "logBase": 1,
-          "show": true
+          "exemplar": true,
+          "expr": "rate(container_cpu_cfs_throttled_seconds_total{container=~\"app.*\"}[1m])",
+          "format": "time_series",
+          "hide": false,
+          "interval": "30s",
+          "intervalFactor": 1,
+          "legendFormat": "{{pod}} cpu throttling",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"app1.*\"}[1m])) by (pod)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{pod}} cpu % ",
+          "refId": "C"
+        },
+        {
+          "exemplar": true,
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"app2.*\"}[1m])) by (pod)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{pod}} cpu %",
+          "refId": "D"
         }
       ],
-      "yaxis": {
-        "align": false
-      }
+      "title": "CPU Utilization % ",
+      "type": "timeseries"
     },
     {
       "aliasColors": {},
@@ -1242,6 +1373,6 @@
   "timezone": "",
   "title": "Druidnet dashboard",
   "uid": "j1bbN5tnt",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }

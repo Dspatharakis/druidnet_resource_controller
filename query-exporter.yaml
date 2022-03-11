@@ -33,6 +33,12 @@ metrics:
   replicas_app2:
     type: gauge
     description: Replicas_app2
+  active_requests_app1:
+    type: gauge
+    description: active_requests_app1
+  active_requests_app2:
+    type: gauge
+    description: active_requests_app2
 
 queries:
   query1:
@@ -85,3 +91,13 @@ queries:
     databases: [db1]
     metrics: [replicas_app2]
     sql: SELECT replicas_app2 from rates AS replicas_app2
+  query11:
+    interval: 1
+    databases: [db1]
+    metrics: [active_requests_app1]
+    sql: SELECT active_requests_app1 from rates AS active_requests_app1
+  query12:
+    interval: 1
+    databases: [db1]
+    metrics: [active_requests_app2]
+    sql: SELECT active_requests_app2 from rates AS active_requests_app2

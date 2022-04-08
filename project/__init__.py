@@ -38,7 +38,7 @@ def make_celery(app):
         #     'rate_limit': '4/s'  # Default is 2 per minute
         # },
           'create_task_queue': {
-            'rate_limit': '4/s',  # Default is 3 per minute
+            'rate_limit': '1/s',  # Default is 3 per minute
             'options': {'queue': 'queue'}
         }
     },

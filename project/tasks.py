@@ -47,7 +47,6 @@ def create_task_green(img_id, start_time):
         conn.execute("UPDATE rates SET accumulative_response_time = accumulative_response_time + '%s'" % art)
         conn.execute("UPDATE rates SET counter_requests = counter_requests + 1")
         conn.commit()
-    
     return True
 
 @celery.task(name="create_task_queue", queue="queue")
@@ -84,6 +83,9 @@ def update_per_interval():
         if data.time_passed_since_last_event >= int(os.environ.get("event_cooldown", "0")): 
             if (length == 0):
                 print ("Event! queue is empty")
+
+                # os.environ["beta1"] = str(1 / (data.req_rate_app1 + data.req_rate_app2))
+                # os.environ["beta2"] = str(1 / (data.req_rate_app1 + data.req_rate_app2))
                 try: 
                     data.process_rate_app1 = float(os.environ.get("beta1", "0.5")) *  data.req_rate_app1 + math.sqrt(2* float(os.environ.get("alpha1", "2"))*data.active_requests_app1)
                 except ValueError as err:
@@ -99,11 +101,8 @@ def update_per_interval():
                 if data.replicas_app1 < 1 : data.replicas_app1 = 1
                 data.replicas_app2 = data.process_rate_app2 // float(os.environ.get("flavor_app2", "10"))
                 if data.replicas_app2 < 1 : data.replicas_app2 = 1
-                data.queue_trigger = 2  #TODO: remove
                 data.time_passed_since_last_event = 0 
                 time_passed = 0
-            else:
-                data.queue_trigger = 1
         req1 = float(os.environ.get("beta1", "0.5")) * data.req_rate_app1 + float(os.environ.get("alpha1", "2"))*(data.time_passed_since_last_event+time_passed)
         req2 = float(os.environ.get("beta2", "0.5")) * data.req_rate_app2 + float(os.environ.get("alpha2", "3"))*(data.time_passed_since_last_event+time_passed)
         if req1 < 0.5: req1=0.5
@@ -113,18 +112,18 @@ def update_per_interval():
         data.time_passed_since_last_event = data.time_passed_since_last_event + time_passed 
         data.time_of_experiment = data.time_of_experiment + 1
         data.queue_size = length
-        data.interval_time = data.interval_time + 1
-        if data.counter_requests > 0:
-            art = data.accumulative_response_time / data.counter_requests
-            data.average_response_time = art
-        else: 
-            data.average_response_time = 0
-        data.counter_requests = 0
-        data.accumulative_response_time = 0
-        data.interval_time = 0 
+        data.interval_time = data.interval_time + float(os.environ.get("CELERY_BEAT", "1"))
+        if data.interval_time >= 1:
+            if data.counter_requests > 0:
+                art = data.accumulative_response_time / data.counter_requests
+                data.average_response_time = art
+            else: 
+                data.average_response_time = 0
+            data.interval_time = 0
+            data.counter_requests = 0
+            data.accumulative_response_time = 0
         db.session.commit()
         print ("Request Rate for App1: ", data.req_rate_app1, " Request Rate for App2: ",data.req_rate_app2)
         celery.control.rate_limit('create_task_queue', str(data.req_rate_app2 + data.req_rate_app1)+"/s", destination=['celery@queue_worker'])
-
     except InternalError:
         pass   

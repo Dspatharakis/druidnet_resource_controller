@@ -9,7 +9,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite://")
     REDIS_URL = "redis://redis:6379"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_POOL_SIZE=200
+    SQLALCHEMY_POOL_SIZE=1000
     app.config['MONGODB_SETTINGS'] = {
     'db': 'flaskdb',
     'host': 'mongodb',

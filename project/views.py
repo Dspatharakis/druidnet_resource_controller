@@ -1,19 +1,15 @@
 # project/main/views.py
 import base64
 from sys import prefix
-from celery.result import AsyncResult
-from flask import render_template, Blueprint, jsonify, request
-from project import app, db, mongo_db
-from project.models import Rate, FileContent
+from flask import  Blueprint, jsonify, request
+from project import app, db
+from project.models import Rate
 import time
 import os
 import uuid
 from project.tasks import create_task_queue
 
-
-
 main_blueprint = Blueprint("main", __name__,)
-
 
 @main_blueprint.route("/tasks", methods=["POST"])
 def run_task():

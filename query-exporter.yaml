@@ -6,12 +6,15 @@ metrics:
   queue_size:
     type: gauge
     description: Queue Size 
-  req_rate_app1:
+  req_rate_flavor_small:
     type: gauge
-    description: Request_Rate_App1
-  req_rate_app2:
+    description: Request_Rate_flavor_small
+  req_rate_flavor_medium:
     type: gauge
-    description: Request_Rate_App2
+    description: Request_Rate_flavor_medium
+  req_rate_flavor_big:
+    type: gauge
+    description: Request_Rate_flavor_big
   time_of_experiment:
     type: gauge
     description: Time of experiment
@@ -21,24 +24,33 @@ metrics:
   queue_trigger:
     type: gauge
     description: queue_trigger
-  process_rate_app1:
+  process_rate_flavor_small:
     type: gauge
-    description: Process_rate_app1
-  process_rate_app2:
+    description: Process_rate_flavor_small
+  process_rate_flavor_medium:
     type: gauge
-    description: Process_rate_app2
-  replicas_app1:
+    description: Process_rate_flavor_medium
+  process_rate_flavor_big:
     type: gauge
-    description: Replicas_app1
-  replicas_app2:
+    description: Process_rate_flavor_big
+  replicas_flavor_small:
     type: gauge
-    description: Replicas_app2
-  active_requests_app1:
+    description: Replicas_flavor_small
+  replicas_flavor_medium:
     type: gauge
-    description: active_requests_app1
-  active_requests_app2:
+    description: Replicas_flavor_medium
+  replicas_flavor_big:
     type: gauge
-    description: active_requests_app2
+    description: Replicas_flavor_big
+  active_requests_flavor_small:
+    type: gauge
+    description: active_requests_flavor_small
+  active_requests_flavor_medium:
+    type: gauge
+    description: active_requests_flavor_medium
+  active_requests_flavor_big:
+    type: gauge
+    description: active_requests_flavor_big
 
 queries:
   query1:
@@ -49,55 +61,75 @@ queries:
   query2:
     interval: 1
     databases: [db1]
-    metrics: [req_rate_app1]
-    sql: select req_rate_app1 from rates as req_rate_app1
+    metrics: [req_rate_flavor_small]
+    sql: select req_rate_flavor_small from rates as req_rate_flavor_small
   query3:
     interval: 1
     databases: [db1]
-    metrics: [req_rate_app2]
-    sql: select req_rate_app2 from rates as req_rate_app2
+    metrics: [req_rate_flavor_medium]
+    sql: select req_rate_flavor_medium from rates as req_rate_flavor_medium
   query4:
+    interval: 1
+    databases: [db1]
+    metrics: [req_rate_flavor_big]
+    sql: select req_rate_flavor_big from rates as req_rate_flavor_big
+  query5:
     interval: 1
     databases: [db1]
     metrics: [time_of_experiment]
     sql: select time_of_experiment from rates as time_of_experiment
-  query5:
+  query6:
     interval: 1
     databases: [db1]
     metrics: [average_response_time]
     sql: SELECT average_response_time from rates AS average_response_time
-  query6:
+  query7:
     interval: 1
     databases: [db1]
     metrics: [queue_trigger]
     sql: SELECT queue_trigger from rates AS queue_trigger
-  query7:
-    interval: 1
-    databases: [db1]
-    metrics: [process_rate_app1]
-    sql: SELECT process_rate_app1 from rates AS process_rate_app1
   query8:
     interval: 1
     databases: [db1]
-    metrics: [process_rate_app2]
-    sql: SELECT process_rate_app2 from rates AS process_rate_app2
+    metrics: [process_rate_flavor_small]
+    sql: SELECT process_rate_flavor_small from rates AS process_rate_flavor_small
   query9:
     interval: 1
     databases: [db1]
-    metrics: [replicas_app1]
-    sql: SELECT replicas_app1 from rates AS replicas_app1
+    metrics: [process_rate_flavor_medium]
+    sql: SELECT process_rate_flavor_medium from rates AS process_rate_flavor_medium
   query10:
     interval: 1
     databases: [db1]
-    metrics: [replicas_app2]
-    sql: SELECT replicas_app2 from rates AS replicas_app2
+    metrics: [process_rate_flavor_big]
+    sql: SELECT process_rate_flavor_big from rates AS process_rate_flavor_big
   query11:
     interval: 1
     databases: [db1]
-    metrics: [active_requests_app1]
-    sql: SELECT active_requests_app1 from rates AS active_requests_app1
+    metrics: [replicas_flavor_small]
+    sql: SELECT replicas_flavor_small from rates AS replicas_flavor_small
   query12:
     interval: 1
     databases: [db1]
-    metrics: [active_requests_app2]
-    sql: SELECT active_requests_app2 from rates AS active_requests_app2
+    metrics: [replicas_flavor_medium]
+    sql: SELECT replicas_flavor_medium from rates AS replicas_flavor_medium
+  query13:
+    interval: 1
+    databases: [db1]
+    metrics: [replicas_flavor_big]
+    sql: SELECT replicas_flavor_big from rates AS replicas_flavor_big
+  query14:
+    interval: 1
+    databases: [db1]
+    metrics: [active_requests_flavor_small]
+    sql: SELECT active_requests_flavor_small from rates AS active_requests_flavor_small
+  query15:
+    interval: 1
+    databases: [db1]
+    metrics: [active_requests_flavor_medium]
+    sql: SELECT active_requests_flavor_medium from rates AS active_requests_flavor_medium
+  query16:
+    interval: 1
+    databases: [db1]
+    metrics: [active_requests_flavor_big]
+    sql: SELECT active_requests_flavor_big from rates AS active_requests_flavor_big

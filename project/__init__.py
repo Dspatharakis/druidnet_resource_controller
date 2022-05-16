@@ -5,8 +5,6 @@ from celery import Celery
 import celery_config
 import prometheus_flask_exporter
 from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-from flask_mongoengine import MongoEngine
-
 
 # instantiate the app
 app = Flask(
@@ -14,7 +12,6 @@ app = Flask(
 )
 app.config.from_object("project.config.Config")
 db = SQLAlchemy(app)
-mongo_db = MongoEngine(app)
 
 # register blueprints
 metrics = GunicornPrometheusMetrics(app)

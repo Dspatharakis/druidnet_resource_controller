@@ -41,7 +41,6 @@ services:
       - .env.dev
     depends_on:
       - db
-      - mongodb
       - redis
   db:
     image: postgres:13-alpine
@@ -70,17 +69,6 @@ services:
   redis:
     image: redis:6-alpine
 
-  mongodb:
-    image: mongo:4.0.8
-    container_name: mongodb
-    restart: unless-stopped
-    command: mongod #--auth
-    environment:
-      - MONGO_INITDB_DATABASE=flaskdb
-      - MONGODB_DATA_DIR=/data/db
-      - MONDODB_LOG_DIR=/dev/null
-    volumes:
-      - mongodbdata:/data/db
 volumes:
   postgres_data:
-  mongodbdata:
+
